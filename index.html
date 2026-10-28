@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111827">
+  <meta name="description" content="Doceme pitch deck — an AI learning experience where students learn by teaching.">
+  <title>Doceme — Pitch Deck</title>
+  <style>
+    :root { color-scheme: dark; --bg:#0b1020; --panel:#141b2e; --text:#f8fafc; --muted:#aab4c8; --accent:#8b9cff; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; background:radial-gradient(ellipse at top,#182342 0,#0b1020 55%); color:var(--text); font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+    header { display:flex; justify-content:space-between; align-items:center; gap:16px; padding:18px clamp(16px,4vw,48px); border-bottom:1px solid #29324a; }
+    .brand { font-weight:800; letter-spacing:.08em; font-size:1.15rem; } .brand span { color:var(--accent); }
+    .tag { color:var(--muted); font-size:.9rem; }
+    main { width:min(1200px,100%); margin:0 auto; padding:clamp(18px,4vw,42px) 16px 28px; }
+    .intro { text-align:center; margin:0 auto 24px; } h1 { font-size:clamp(1.5rem,3vw,2.3rem); margin:0 0 8px; } .intro p { color:var(--muted); margin:0; }
+    .viewer { position:relative; background:#05070d; border:1px solid #303b55; border-radius:18px; padding:10px; box-shadow:0 24px 70px #0008; }
+    .slide-wrap { display:flex; justify-content:center; align-items:center; min-height:220px; }
+    .slide { display:block; max-width:100%; max-height:calc(100vh - 250px); width:auto; height:auto; object-fit:contain; border-radius:8px; }
+    .controls { display:flex; justify-content:center; align-items:center; flex-wrap:wrap; gap:12px; padding:18px 4px 4px; }
+    button { font:inherit; cursor:pointer; border:1px solid #46516d; color:var(--text); background:#1b2540; padding:10px 17px; border-radius:999px; transition:background .15s,transform .15s; }
+    button:hover { background:#2a385e; } button:active { transform:scale(.98); } button:focus-visible { outline:3px solid var(--accent); outline-offset:3px; }
+    button:disabled { opacity:.35; cursor:not-allowed; }
+    .counter { min-width:86px; text-align:center; color:var(--muted); font-variant-numeric:tabular-nums; }
+    .thumbs { display:flex; gap:10px; overflow-x:auto; padding:18px 2px 8px; scroll-snap-type:x mandatory; }
+    .thumb { flex:0 0 112px; padding:4px; border-radius:9px; background:#11182a; border:2px solid transparent; scroll-snap-align:center; }
+    .thumb img { width:100%; display:block; border-radius:5px; } .thumb[aria-current="true"] { border-color:var(--accent); }
+    footer { text-align:center; color:var(--muted); padding:12px 16px 26px; font-size:.85rem; }
+    @media(max-width:600px) { header { align-items:flex-start; flex-direction:column; } .viewer { padding:6px; border-radius:12px; } .slide { max-height:62vh; } .thumb { flex-basis:82px; } }
+  </style>
+</head>
+<body>
+  <header><div class="brand">DOCEME<span>.</span></div><div class="tag">Pitch Deck · Learn by teaching</div></header>
+  <main>
+    <section class="intro"><h1>What if the best way to learn was to teach?</h1><p>Explore the Doceme pitch deck using the arrows or your keyboard.</p></section>
+    <section class="viewer" aria-label="Pitch deck presentation">
+      <div class="slide-wrap"><img id="mainSlide" class="slide" src="slides/slide-01.png" alt="Doceme pitch deck slide 1 of 8"></div>
+      <div class="controls">
+        <button id="prev" type="button" aria-label="Previous slide">← Previous</button>
+        <span class="counter" id="counter" aria-live="polite">1 / 8</span>
+        <button id="next" type="button" aria-label="Next slide">Next →</button>
+        <button id="fullscreen" type="button">Full screen</button>
+      </div>
+    </section>
+    <nav class="thumbs" id="thumbs" aria-label="Choose a slide"></nav>
+  </main>
+  <footer>Doceme Pitch Deck · Use ← and → keys to navigate</footer>
+  <script>
+    const total = 8;
+    let current = 1;
+    const mainSlide = document.getElementById('mainSlide');
+    const counter = document.getElementById('counter');
+    const prev = document.getElementById('prev');
+    const next = document.getElementById('next');
+    const thumbs = document.getElementById('thumbs');
+    const pad = value => String(value).padStart(2, '0');
+    function showSlide(number) {
+      current = Math.max(1, Math.min(total, number));
+      mainSlide.src = `slides/slide-${pad(current)}.png`;
+      mainSlide.alt = `Doceme pitch deck slide ${current} of ${total}`;
+      counter.textContent = `${current} / ${total}`;
+      prev.disabled = current === 1;
+      next.disabled = current === total;
+      [...thumbs.children].forEach((button, index) => {
+        const active = index + 1 === current;
+        button.setAttribute('aria-current', active ? 'true' : 'false');
+        if (active) button.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+      });
+    }
+    for (let i = 1; i <= total; i++) {
+      const button = document.createElement('button');
+      button.className = 'thumb';
+      button.type = 'button';
+      button.setAttribute('aria-label', `Go to slide ${i}`);
+      button.innerHTML = `<img src="slides/slide-${pad(i)}.png" alt="Slide ${i} thumbnail">`;
+      button.addEventListener('click', () => showSlide(i));
+      thumbs.appendChild(button);
+    }
+    prev.addEventListener('click', () => showSlide(current - 1));
+    next.addEventListener('click', () => showSlide(current + 1));
+    document.getElementById('fullscreen').addEventListener('click', async () => {
+      const target = document.querySelector('.viewer');
+      try {
+        if (!document.fullscreenElement) await target.requestFullscreen();
+        else await document.exitFullscreen();
+      } catch (error) { alert('Full screen is not supported by this browser.'); }
+    });
+    document.addEventListener('keydown', event => {
+      if (event.key === 'ArrowRight' || event.key === 'PageDown') showSlide(current + 1);
+      if (event.key === 'ArrowLeft' || event.key === 'PageUp') showSlide(current - 1);
+    });
+    showSlide(1);
+  </script>
+</body>
+</html>
